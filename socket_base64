@@ -2,6 +2,7 @@ import cv2
 import base64
 import socket
 import pickle
+import numpy as np
 import time
 import json
 
@@ -9,30 +10,32 @@ import json
 server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 Port = 5000
 maxConnections = 999
-hostname = socket.gethostname()
+hostname = socket.gethostname() 
 IP = socket.gethostbyname(hostname)
 print("Server started at " + IP + " on port " + str(Port))
 server_socket.bind(('0.0.0.0', Port))
 server_socket.listen(1)
 connection, client_address = server_socket.accept()
 # Capture video from the default camera (0)
-cap = cv2.VideoCapture("rtsp://admin:123456@streaming.deutics.live:61932/stream0?")
+cap = cv2.VideoCapture("test7.mp4")
+# cap = cv2.VideoCapture("rtsp://admin:123456@streaming.deutics.live:61932/stream0?")
+
 index = 0
 while True:
     ret, frame = cap.read()
-    _, buffer = cv2.imencode('.jpg', frame)
-    frame_base64 = base64.b64encode(buffer)
-    print("size", len(frame_base64))
-    size_dump = json.dumps(len(frame_base64))
-    # connection.sendall(pickle.dumps(frame_base64))
-    # serialized_data = json.dumps(frame_base64)
-    # print(frame_base64)
-    # connection.sendall(size_dump.encode())
-    connection.sendall(frame_base64+b"END_OF_FRAME")
-    cv2.imshow("stream", frame)
-    if cv2.waitKey(1) & 0xFF == ord('q'):
+    if ret:
+        _, buffer = cv2.imencode('.jpg', frame)
+        frame_base64 = base64.b64encode(buffer)
+        connection.sendall(frame_base64+b"END_OF_FRAME")
+        cv2.imshow("stream", frame)
+        if cv2.waitKey(1) & 0xFF == ord('q'):
+            break
+        time.sleep(0.01)
+    else:
         break
-    time.sleep(0.1)
+        
+
     # index += 1
-connection.close()
 cap.release()
+connection.close()
+

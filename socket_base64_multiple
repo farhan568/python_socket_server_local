@@ -1,0 +1,62 @@
+import cv2
+import base64
+import socket
+import pickle
+import numpy as np
+import time
+import json
+from multiprocessing import Process
+
+
+def handle_stream(port, video_source):
+    # Create a socket connection
+    server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    hostname = socket.gethostname()
+    IP = socket.gethostbyname(hostname)
+    print(f"Server started at {IP} on port {port}")
+    server_socket.bind(('0.0.0.0', port))
+    server_socket.listen(1)
+    connection, client_address = server_socket.accept()
+
+    # Capture video from the specified source
+    cap = cv2.VideoCapture(video_source)
+
+    while True:
+        ret, frame = cap.read()
+        if ret:
+            frame = cv2.resize(frame, (650, 450))
+
+            _, buffer = cv2.imencode('.jpg', frame)
+            frame_base64 = base64.b64encode(buffer)
+            connection.sendall(frame_base64 + b"END_OF_FRAME")
+            cv2.imshow(f"Stream on port {port}", frame)
+            if cv2.waitKey(1) & 0xFF == ord('q'):
+                break
+            time.sleep(0.001)
+        else:
+            break
+
+    cap.release()
+    connection.close()
+
+
+if __name__ == "__main__":
+    # Define the ports and video sources for the two streams
+    port1 = 5000
+    port2 = 3000
+    video_source1 = "test7.mp4"
+    video_source1 = "rtsp://admin:123456@streaming.deutics.live:61932/stream0?"
+    video_source2 = "rtsp://getptz:a10alb8q9jz8jJiD@93.122.231.135:9554/ISAPI/Streaming/channels/102"  # Replace with the actual second video source
+
+    # Create two separate processes for handling the streams
+    process2 = Process(target=handle_stream, args=(port2, video_source2))
+
+    process1 = Process(target=handle_stream, args=(port1, video_source1))
+
+    # Start the processes
+    process1.start()
+    process2.start()
+
+    # Wait for both processes to finish
+    # process1.join()
+    # process2.join()
