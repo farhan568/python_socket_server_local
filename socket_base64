@@ -18,7 +18,7 @@ connection, client_address = server_socket.accept()
 # Capture video from the default camera (0)
 cap = cv2.VideoCapture("rtsp://admin:123456@streaming.deutics.live:61932/stream0?")
 index = 0
-while index < 1:
+while True:
     ret, frame = cap.read()
     _, buffer = cv2.imencode('.jpg', frame)
     frame_base64 = base64.b64encode(buffer)
@@ -28,9 +28,11 @@ while index < 1:
     # serialized_data = json.dumps(frame_base64)
     # print(frame_base64)
     # connection.sendall(size_dump.encode())
-    connection.sendall(frame_base64)
-    # connection.sendall(size_dump.encode())
+    connection.sendall(frame_base64+b"END_OF_FRAME")
+    cv2.imshow("stream", frame)
+    if cv2.waitKey(1) & 0xFF == ord('q'):
+        break
     time.sleep(0.1)
-    index += 1
+    # index += 1
 connection.close()
 cap.release()
