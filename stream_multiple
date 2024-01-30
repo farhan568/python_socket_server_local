@@ -20,7 +20,7 @@ def handle_stream(port, video_source):
 
     # Capture video from the specified source
     cap = cv2.VideoCapture(video_source)
-    # cap = cv2.VideoCapture("test7.mp4")
+
     while True:
         ret, frame = cap.read()
         if ret:
@@ -28,9 +28,9 @@ def handle_stream(port, video_source):
             _, buffer = cv2.imencode('.jpg', frame, [cv2.IMWRITE_JPEG_QUALITY, 10])
             frame_base64 = base64.b64encode(buffer)
             connection.sendall(frame_base64 + b"END_OF_FRAME")
-            cv2.imshow(f"Stream on port {port}", frame)
-            if cv2.waitKey(1) & 0xFF == ord('q'):
-                break
+            # cv2.imshow(f"Stream on port {port}", frame)
+            # if cv2.waitKey(1) & 0xFF == ord('q'):
+            #     break
             time.sleep(0.01)
         else:
             break
@@ -42,19 +42,34 @@ def handle_stream(port, video_source):
 if __name__ == "__main__":
     # Define the ports and video sources for the two streams
     port1 = 5000
-    port2 = 3000
-    video_source1 = "test7.mp4"
+    port2 = 5001
+    port3 = 5002
+    port4 = 5003
+    port5 = 5004
+    port6 = 3005
+    
     video_source1 = "rtsp://admin:123456@streaming.deutics.live:61932/stream0?"
     video_source2 = "rtsp://getptz:a10alb8q9jz8jJiD@93.122.231.135:9554/ISAPI/Streaming/channels/102"  # Replace with the actual second video source
+    video_source3 = "test7.mp4"
+    video_source4 = "test7 - 2.mp4"  # Replace with the actual second video source
+    video_source5 = "test7 - 3.mp4"
+    video_source6 = "test7 - 4.mp4"  # Replace with the actual second video source
 
     # Create two separate processes for handling the streams
-    process2 = Process(target=handle_stream, args=(port2, video_source2))
-
     process1 = Process(target=handle_stream, args=(port1, video_source1))
+    process2 = Process(target=handle_stream, args=(port2, video_source2))
+    process3 = Process(target=handle_stream, args=(port3, video_source3))
+    # process4 = Process(target=handle_stream, args=(port4, video_source4))
+    # process5 = Process(target=handle_stream, args=(port5, video_source5))
+    # process6 = Process(target=handle_stream, args=(port6, video_source6))
 
     # Start the processes
     process1.start()
     process2.start()
+    process3.start()
+    # process4.start()
+    # process5.start()
+    # process6.start()
 
     # Wait for both processes to finish
     # process1.join()
