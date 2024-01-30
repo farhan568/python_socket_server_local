@@ -1,0 +1,52 @@
+import cv2
+import socket
+import time
+import numpy as np
+from multiprocessing import Process
+
+def handle_stream(port, video_source):
+    server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    server_socket.bind(('0.0.0.0', port))
+    server_socket.listen(1)
+    connection, client_address = server_socket.accept()
+
+    cap = cv2.VideoCapture(video_source)
+
+    while True:
+        ret, frame = cap.read()
+        if not ret:
+            break
+
+        frame = cv2.resize(frame, (650, 450))
+        _, buffer = cv2.imencode('.jpg', frame)
+
+        # Send the frame size as 4 bytes followed by the raw bytes of the frame
+        frame_size = len(buffer).to_bytes(4, byteorder='big')
+        connection.sendall(bytes(frame_size) + bytes(buffer))
+        time.sleep(0.001)
+        
+
+    cap.release()
+    connection.close()
+
+if __name__ == "__main__":
+    port1 = 5000
+    port2 = 3000
+    port3 = 7000
+    
+    video_source1 = "rtsp://admin:123456@streaming.deutics.live:61932/stream0?"
+    video_source2 = "rtsp://getptz:a10alb8q9jz8jJiD@93.122.231.135:9554/ISAPI/Streaming/channels/102"
+    video_source3 = "test7.mp4"
+
+
+    process1 = Process(target=handle_stream, args=(port1, video_source1))
+    process2 = Process(target=handle_stream, args=(port2, video_source2))
+    process3 = Process(target=handle_stream, args=(port3, video_source3))
+    
+
+    process1.start()
+    process2.start()
+    process3.start()
+
+    # process1.join()
+    # process2.join()
