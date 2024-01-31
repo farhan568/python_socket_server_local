@@ -14,46 +14,58 @@ def handle_stream(port, video_source):
     connection, client_address = server_socket.accept()
     print("Connection established")
     cap = cv2.VideoCapture(video_source)
-
+    index = 0
     while True:
         ret, frame = cap.read()
         if not ret:
             break
 
         frame = cv2.resize(frame, (650, 450))
-        _, buffer = cv2.imencode('.jpg', frame, [cv2.IMWRITE_JPEG_QUALITY, 20])
+        _, buffer = cv2.imencode('.jpg', frame, [cv2.IMWRITE_JPEG_QUALITY, 50])
 
         # Send the frame size as 4 bytes followed by the raw bytes of the frame
         frame_size = len(buffer).to_bytes(4, byteorder='big')
         connection.sendall(bytes(frame_size) + bytes(buffer))
         # time.sleep(0.00001)
+        # index +=1
         
 
     cap.release()
     connection.close()
 
 if __name__ == "__main__":
-    port1 = 5000
-    port2 = 3000
-    port3 = 7000
-    port4 = 7001
+    port1 = 5001
+    port2 = 5002
+    port3 = 5003
+    port4 = 5004
+    port5 = 5005
+    port6 = 5006
     
     video_source1 = 0
     video_source2 = "rtsp://getptz:a10alb8q9jz8jJiD@93.122.231.135:9554/ISAPI/Streaming/channels/102"
     video_source3 = "rtsp://admin:123456@streaming.deutics.live:61932/stream0?"
     video_source4 = "test7.mp4"
+    video_source5 = "test7 - 2.mp4"
+    video_source6 = "test7 - 3.mp4"
+
 
 
     process1 = Process(target=handle_stream, args=(port1, video_source1))
     process2 = Process(target=handle_stream, args=(port2, video_source2))
     process3 = Process(target=handle_stream, args=(port3, video_source3))
     process4 = Process(target=handle_stream, args=(port4, video_source4))
+    process5 = Process(target=handle_stream, args=(port5, video_source5))
+    process6 = Process(target=handle_stream, args=(port6, video_source6))
+
     
 
     process1.start()
     process2.start()
     process3.start()
     process4.start()
+    process5.start()
+    process6.start()
+
 
     # process1.join()
     # process2.join()
